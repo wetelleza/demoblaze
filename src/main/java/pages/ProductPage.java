@@ -17,7 +17,8 @@ public class ProductPage {
         this.wait = new org.openqa.selenium.support.ui.WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
-    private By addToCartButton = By.xpath("//a[contains(@onclick, 'addToCart') and contains(@class, 'btn-success')]");
+    private final By addToCartButton = By.xpath("//a[contains(@onclick, 'addToCart') and contains(@class, 'btn-success')]");
+    private final By priceLocator = By.xpath("//h3[@class='price-container']");
 
     public void addToCart() {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
@@ -32,4 +33,10 @@ public class ProductPage {
             System.out.println("No se encontró ninguna alerta de confirmación.");
         }
     }
+
+    public String getProductPrice() {
+        String priceText = wait.until(ExpectedConditions.visibilityOfElementLocated(priceLocator)).getText();
+        return priceText.replace("$", "").split(" ")[0].trim();
+    }
+
 }

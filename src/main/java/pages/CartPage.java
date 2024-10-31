@@ -25,7 +25,6 @@ public class CartPage {
     private final By successTitle = By.tagName("h2");
     private final By details = By.className("lead");
     private final By confirmButton = By.className("confirm");
-    private final By deleteButtonLocator = By.xpath("//a[contains(@onclick, 'deleteItem')]");
 
     public CartPage(WebDriver driver) {
         this.driver = driver;
@@ -82,6 +81,12 @@ public class CartPage {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public String getProductPrice() {
+        By cartPriceLocator = By.xpath("//tr[@class='success']//td[3]");
+        String priceText = wait.until(ExpectedConditions.visibilityOfElementLocated(cartPriceLocator)).getText();
+        return priceText.replace("$", "").trim();
     }
 
 }

@@ -17,7 +17,7 @@ public class HomePage {
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
-    private By cartLink = By.id("cartur");
+    private final By cartLink = By.id("cartur");
 
     public void navigateToHomePage() {
         driver.get("https://www.demoblaze.com/");
@@ -33,4 +33,11 @@ public class HomePage {
         WebElement cart = driver.findElement(cartLink);
         cart.click();
     }
+
+    public String getProductPrice(String productName) {
+        By productPriceLocator = By.xpath("//h4/a[text()='" + productName + "']/ancestor::div[@class='card-block']//h5");
+        String priceText = wait.until(ExpectedConditions.visibilityOfElementLocated(productPriceLocator)).getText();
+        return priceText.replace("$", "").trim();
+    }
+
 }
