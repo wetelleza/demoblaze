@@ -6,13 +6,14 @@ Feature: Test demoblaze
     And the user adds the product to the cart
     And the user goes to the cart
     And place order
-    And complete the data of payment
+    And complete the data of payment with name "<name>", card number "<cardNumber>", month "<month>", and year "<year>"
     Then the user verify the purchase
 
     Examples:
-      | productName          |
-      | Samsung galaxy s6    |
-      | Nokia lumia 1520     |
+      | productName       | name          | cardNumber           | month | year |
+      | Samsung galaxy s6 | Wilson Tellez | 4111-1111-1111-1111  | 12    | 26   |
+      | Nokia lumia 1520  | Wilson Tellez | 4111-1111-1111-1111  | 12    | 26   |
+
 
 
   Scenario Outline: Add and delete product
@@ -43,3 +44,10 @@ Feature: Test demoblaze
       | productName          |
       | Nokia lumia 1520     |
       | Samsung galaxy s6    |
+
+
+  Scenario: Attempt to place an order with an empty cart
+    Given the user navigates to the home page
+    And the user goes to the cart
+    When the user tries to place an order without adding items
+    Then the purchase should not be allowed

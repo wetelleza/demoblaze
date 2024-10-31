@@ -3,6 +3,8 @@ package pages;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -13,70 +15,101 @@ public class CartPage {
     private final WebDriver driver;
     private final WebDriverWait wait;
 
-    // Locators
-    private final By placeOrderButton = By.xpath("//button[text()='Place Order']");
-    private final By modalTitle = By.id("orderModalLabel");
-    private final By nameField = By.id("name");
-    private final By cardField = By.id("card");
-    private final By monthField = By.id("month");
-    private final By yearField = By.id("year");
-    private final By purchaseButton = By.xpath("//button[@onclick='purchaseOrder()']");
-    private final By successModal = By.className("sweet-alert");
-    private final By successTitle = By.tagName("h2");
-    private final By details = By.className("lead");
-    private final By confirmButton = By.className("confirm");
+    // Using @FindBy annotations to locate elements
+    @FindBy(xpath = "//button[text()='Place Order']")
+    private WebElement placeOrderButton;
+
+    @FindBy(id = "orderModalLabel")
+    private WebElement modalTitle;
+
+    @FindBy(id = "name")
+    private WebElement nameField;
+
+    @FindBy(id = "card")
+    private WebElement cardField;
+
+    @FindBy(id = "month")
+    private WebElement monthField;
+
+    @FindBy(id = "year")
+    private WebElement yearField;
+
+    @FindBy(xpath = "//button[@onclick='purchaseOrder()']")
+    private WebElement purchaseButton;
+
+    @FindBy(className = "sweet-alert")
+    private WebElement successModal;
+
+    @FindBy(xpath = "//div[contains(@class, 'sweet-alert')]//h2[text()='Thank you for your purchase!']")
+    private WebElement successTitle;
+
+    @FindBy(className = "lead")
+    private WebElement details;
+
+    @FindBy(className = "confirm")
+    private WebElement confirmButton;
+
+    @FindBy(id = "tbodyid")
+    private WebElement cartTableBody;
 
     public CartPage(WebDriver driver) {
         this.driver = driver;
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        PageFactory.initElements(driver, this); // Initialize elements
     }
 
     public void placeOrder() {
-        wait.until(ExpectedConditions.visibilityOfElementLocated(placeOrderButton)).click();
+        wait.until(ExpectedConditions.visibilityOf(placeOrderButton)).click();
     }
 
     public void completePaymentData(String name, String cardNumber, String month, String year) {
-        wait.until(ExpectedConditions.visibilityOfElementLocated(modalTitle));
-        driver.findElement(nameField).sendKeys(name);
-        driver.findElement(cardField).sendKeys(cardNumber);
-        driver.findElement(monthField).sendKeys(month);
-        driver.findElement(yearField).sendKeys(year);
+        wait.until(ExpectedConditions.visibilityOf(modalTitle));
+        nameField.sendKeys(name);
+        cardField.sendKeys(cardNumber);
+        monthField.sendKeys(month);
+        yearField.sendKeys(year);
 
-        driver.findElement(purchaseButton).click();
+        purchaseButton.click();
     }
 
     public boolean isPurchaseSuccessful() {
-        return wait.until(ExpectedConditions.visibilityOfElementLocated(successModal)).isDisplayed();
+        return wait.until(ExpectedConditions.visibilityOf(successModal)).isDisplayed();
     }
 
     public String getSuccessMessage() {
-        return wait.until(ExpectedConditions.visibilityOfElementLocated(successModal))
-                .findElement(successTitle).getText();
+        wait.until(ExpectedConditions.visibilityOf(successModal));
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return successTitle.getText();
     }
 
     public String getPurchaseDetails() {
-        return wait.until(ExpectedConditions.visibilityOfElementLocated(details)).getText();
+        return wait.until(ExpectedConditions.visibilityOf(details)).getText();
     }
 
     public void confirmPurchase() {
-        wait.until(ExpectedConditions.visibilityOfElementLocated(confirmButton)).click();
+        wait.until(ExpectedConditions.visibilityOf(confirmButton)).click();
     }
 
     public boolean isProductDisplayed(String productName) {
-        By productNameLocator = By.xpath("//tbody[@id='tbodyid']//td[contains(text(), '" + productName + "')]");
-        return wait.until(ExpectedConditions.visibilityOfElementLocated(productNameLocator)).isDisplayed();
+        WebElement productNameElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//tbody[@id='tbodyid']//td[contains(text(), '" + productName + "')]")));
+        return productNameElement.isDisplayed();
     }
 
     public void clickDeleteButton(String productName) {
-        By deleteButtonLocator = By.xpath("//tbody[@id='tbodyid']//td[contains(text(), '" + productName + "')]/following-sibling::td/a[contains(@onclick, 'deleteItem')]");
-        WebElement deleteButton = wait.until(ExpectedConditions.elementToBeClickable(deleteButtonLocator));
+        WebElement deleteButton = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//tbody[@id='tbodyid']//td[contains(text(), '" + productName + "')]/following-sibling::td/a[contains(@onclick, 'deleteItem')]")));
         deleteButton.click();
     }
 
     public boolean isProductDeleted(String productName) {
-        By productLocator = By.xpath("//tbody[@id='tbodyid']//td[contains(text(), '" + productName + "')]");
         try {
-            wait.until(ExpectedConditions.invisibilityOfElementLocated(productLocator));
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(
+                    By.xpath("//tbody[@id='tbodyid']//td[contains(text(), '" + productName + "')]")));
             return true;
         } catch (Exception e) {
             return false;
@@ -84,9 +117,31 @@ public class CartPage {
     }
 
     public String getProductPrice() {
-        By cartPriceLocator = By.xpath("//tr[@class='success']//td[3]");
-        String priceText = wait.until(ExpectedConditions.visibilityOfElementLocated(cartPriceLocator)).getText();
+        WebElement cartPriceElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//tr[@class='success']//td[3]")));
+        String priceText = cartPriceElement.getText();
         return priceText.replace("$", "").trim();
     }
 
+    public boolean isPaymentModalVisible() {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        try {
+            return modalTitle.isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isCartEmpty() {
+        try {
+            wait.until(ExpectedConditions.visibilityOf(cartTableBody));
+            return cartTableBody.findElements(By.tagName("tr")).isEmpty();
+        } catch (Exception e) {
+            return true;
+        }
+    }
 }

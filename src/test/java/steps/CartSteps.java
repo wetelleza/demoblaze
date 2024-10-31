@@ -2,6 +2,7 @@ package steps;
 
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import org.testng.Assert;
 import pages.CartPage;
 import utils.DriverManager;
@@ -16,16 +17,15 @@ public class CartSteps {
         cartPage.placeOrder();
     }
 
-    @And("complete the data of payment")
-    public void completeTheDataOfPayment() {
-        cartPage.completePaymentData("Wilson Tellez", "4111-1111-1111-1111", "12", "26");
+    @And("complete the data of payment with name {string}, card number {string}, month {string}, and year {string}")
+    public void completeTheDataOfPayment(String name, String cardNumber, String month, String year) {
+        cartPage.completePaymentData(name, cardNumber, month, year);
     }
 
     @Then("the user verify the purchase")
     public void verifyPurchase() {
         Assert.assertTrue(cartPage.isPurchaseSuccessful(), "Purchase was not successful");
         Assert.assertEquals("Thank you for your purchase!", cartPage.getSuccessMessage());
-
         String detailsText = cartPage.getPurchaseDetails();
         Assert.assertTrue(detailsText.contains("Id:"));
         Assert.assertTrue(detailsText.contains(" USD"));
@@ -51,5 +51,16 @@ public class CartSteps {
         Assert.assertTrue(cartPage.isProductDeleted(productName), "The product " + productName + " was not removed.");
     }
 
+    @When("the user tries to place an order without adding items")
+    public void placeOrderWithoutItems() {
+        Assert.assertTrue(cartPage.isCartEmpty(), "The cart is not empty as expected.");
+        cartPage.placeOrder();
+    }
+
+    @Then("the purchase should not be allowed")
+    public void verifyPurchaseNotAllowed() {
+        boolean isPaymentModalVisible = cartPage.isPaymentModalVisible();
+        Assert.assertFalse(isPaymentModalVisible, "The purchase was allowed despite the cart being empty!");
+    }
 
 }
